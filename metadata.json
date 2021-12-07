@@ -1,8 +1,8 @@
 
 {
     "tags": [],
-    "name": "Return on Investments Monitor",
-    "description": "Model to Compute Actual ROI",
+    "name": "Return on Investments Monitor (Projections)",
+    "description": "Model to Compute Projected ROI",
     "modelCategory": "MODEL_MONITORING_MODEL",
     "defaultAssociationRole": "PERFORMANCE_MODEL",
     "frequentlyUsed": true,
