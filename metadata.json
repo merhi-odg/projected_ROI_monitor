@@ -1,0 +1,10 @@
+
+{
+    "tags": [],
+    "name": "Return on Investments Monitor",
+    "description": "Model to Compute Actual ROI",
+    "modelCategory": "MODEL_MONITORING_MODEL",
+    "defaultAssociationRole": "PERFORMANCE_MODEL",
+    "frequentlyUsed": true,
+    "custom" : {}
+}
