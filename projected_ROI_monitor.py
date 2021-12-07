@@ -16,14 +16,16 @@ def begin() -> None:
     ROI_configs = model_configs["monitoring"]["business_value"]["ROI"]
     logger.info("ROI configs: %s", ROI_configs)
 
-    global amount_field, label_field, score_field
-    global cost_multipliers
+    global amount_field, score_field
+    global baseline_metrics, cost_multipliers
     global positive_class_label
 
     amount_field = ROI_configs["amount_field"] # Column containing transaction amount
     score_field = ROI_configs["score_field"] # Column containing model prediction
-    label_field = ROI_configs["label_field"] # Column containing ground_truth
         
+    # Classification metrics on baseline data
+    baseline_metrics = ROI_configs["baseline_metrics"]
+    
     # ROI cost multipliers for each classification case
     cost_multipliers = ROI_configs["cost_multipliers"]
 
@@ -37,41 +39,32 @@ def begin() -> None:
 # modelop.metrics
 def metrics(dataframe) -> dict:
     """
-    A Function to classify records & compute actual ROI given a labeled & scored DataFrame.
+    A Function to compute actprojectedual ROI given a scored DataFrame.
 
     Args:
         dataframe (pd.DataFrame): Slice of Production data
 
     Yields:
-        dict: Test Result containing actual roi metrics
+        dict: Test Result containing projected roi metrics
     """
 
-    # Classify each record in dataframe
-    for idx in range(len(dataframe)):
-        if dataframe.iloc[idx][label_field] == dataframe.iloc[idx][score_field]:
-            dataframe["record_class"] = (
-                "TP" if dataframe.iloc[idx][label_field] == positive_class_label else "TN"
-            )
-        elif dataframe.iloc[idx][label_field] < dataframe.iloc[idx][score_field]:
-            dataframe["record_class"] = "FP"
-        else:
-            dataframe["record_class"] = "FN"
+    # Compute projected ROI
+    projected_roi = compute_projected_roi(dataframe)
 
-    # Compute actual ROI
-    actual_roi = compute_actual_roi(dataframe)
 
     yield {
-        "actual_roi": actual_roi,
+        "projected_roi": projected_roi,
         "amount_field": amount_field,
         "business_value": [
             {
-                "test_name": "Actual ROI",
+                "test_name": "Projected ROI",
                 "test_category": "business_value",
-                "test_type": "actual_roi",
-                "test_id": "business_value_actual_roi",
+                "test_type": "projected_roi",
+                "test_id": "business_value_projected_roi",
                 "values": {
-                    "actual_roi": actual_roi,
+                    "projected_roi": projected_roi,
                     "amount_field": amount_field,
+                    "baseline_metrics": baseline_metrics,
                     "cost_multipliers": cost_multipliers,
                 },
             }
@@ -79,22 +72,30 @@ def metrics(dataframe) -> dict:
     }
 
 
-def compute_actual_roi(data) -> float:
+def compute_projected_roi(data) -> float:
     """
-    Helper function to compute actual ROI.
+    Helper function to compute projected ROI.
 
     Args:
         data (pd.DataFrame): Input DataFrame containing record_class
 
     Returns:
-        float: actual ROI
+        float: projected ROI
     """
-
-    actual_roi = 0
+    
+    projected_roi = 0
     for idx in range(len(data)):
-        actual_roi += (
-            data.iloc[idx][amount_field]
-            * cost_multipliers[data.iloc[idx]["record_class"]]
+        projected_roi += data.iloc[idx][amount_field] * (
+            (data.iloc[idx][score_field] == positive_class_label)
+            * (
+                baseline_metrics["TPR"] * cost_multipliers["TP"]
+                + (1 - baseline_metrics["TPR"] * cost_multipliers["FP"])
+            )
+            + (data.iloc[idx][score_field] != positive_class_label)
+            * (
+                baseline_metrics["TNR"] * cost_multipliers["TN"]
+                + (1 - baseline_metrics["TNR"] * cost_multipliers["FN"])
+            )
         )
 
-    return round(actual_roi, 2)
+    return round(projected_roi, 2)
