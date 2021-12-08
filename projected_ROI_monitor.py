@@ -10,10 +10,10 @@ def begin() -> None:
     A function to declare model-specific variables used in ROI computation.
     """
     
-    with open("config.json", "r") as config_file:
-        model_configs = json.load(config_file)
+    with open("modelop_parameters.json", "r") as config_file:
+        modelop_parameters = json.load(config_file)
     
-    ROI_configs = model_configs["monitoring"]["business_value"]["ROI"]
+    ROI_configs = modelop_parameters["monitoring"]["business_value"]["ROI"]
     logger.info("ROI configs: %s", ROI_configs)
 
     global amount_field, score_field
@@ -31,7 +31,7 @@ def begin() -> None:
 
     # Read and set label of positive class
     try:
-        positive_class_label = model_configs["monitoring"]["performance"]["positive_class_label"]
+        positive_class_label = modelop_parameters["monitoring"]["performance"]["positive_class_label"]
         logger.info("Label of Positive Class: %s", positive_class_label)
     except KeyError:
         raise KeyError("model configs should define label of positive class!")
