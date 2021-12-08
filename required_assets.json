@@ -12,7 +12,7 @@
         "name": ".*\\.json",
         "filename": "modelop_parameters.json",
         "metaData": {
-            "description": "Monitoring parameters"
+            "description": "Monitoring Parameters File"
         }
     }
 ]

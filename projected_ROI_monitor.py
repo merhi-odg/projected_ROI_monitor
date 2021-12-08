@@ -7,39 +7,40 @@ logger = utils.configure_logger()
 # modelop.init
 def begin() -> None:
     """
-    A function to declare model-specific variables used in ROI computation.
+    A function to set model-specific global variables used in ROI computations.
     """
     
-    with open("modelop_parameters.json", "r") as config_file:
-        modelop_parameters = json.load(config_file)
+    with open("modelop_parameters.json", "r") as parameters_file:
+        modelop_parameters = json.load(parameters_file)
     
-    ROI_configs = modelop_parameters["monitoring"]["business_value"]["ROI"]
-    logger.info("ROI configs: %s", ROI_configs)
+    ROI_parameters = modelop_parameters["monitoring"]["business_value"]["ROI"]
+    logger.info("ROI parameters: %s", ROI_parameters)
 
     global amount_field, score_field
     global baseline_metrics, cost_multipliers
     global positive_class_label
 
-    amount_field = ROI_configs["amount_field"] # Column containing transaction amount
-    score_field = ROI_configs["score_field"] # Column containing model prediction
+    amount_field = ROI_parameters["amount_field"] # Column containing transaction amount
+    score_field = ROI_parameters["score_field"] # Column containing model prediction
         
     # Classification metrics on baseline data
-    baseline_metrics = ROI_configs["baseline_metrics"]
+    baseline_metrics = ROI_parameters["baseline_metrics"]
     
     # ROI cost multipliers for each classification case
-    cost_multipliers = ROI_configs["cost_multipliers"]
+    cost_multipliers = ROI_parameters["cost_multipliers"]
 
     # Read and set label of positive class
     try:
         positive_class_label = modelop_parameters["monitoring"]["performance"]["positive_class_label"]
         logger.info("Label of Positive Class: %s", positive_class_label)
     except KeyError:
-        raise KeyError("model configs should define label of positive class!")
+        raise KeyError("model parameters should define label of positive class!")
+
 
 # modelop.metrics
 def metrics(dataframe) -> dict:
     """
-    A Function to compute actprojectedual ROI given a scored DataFrame.
+    A Function to compute projected ROI given a scored DataFrame.
 
     Args:
         dataframe (pd.DataFrame): Slice of Production data
