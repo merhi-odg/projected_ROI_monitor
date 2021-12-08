@@ -10,9 +10,9 @@
         "usage": "ADDITIONAL_ASSET",
         "assetRole":"UNKNOWN",
         "name": ".*\\.json",
-        "filename": "config.json",
+        "filename": "modelop_parameters.json",
         "metaData": {
-            "description": "Model Configuration file"
+            "description": "Monitoring parameters"
         }
     }
 ]
